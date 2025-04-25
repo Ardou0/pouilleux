@@ -10,7 +10,6 @@ import java.util.Random;
 public class MixedRandomStrategy implements MoveStrategy {
     private static final List<MoveStrategy> OPTIONS = List.of(
             new RandomDrawStrategy(),
-            new PurgeThenDrawStrategy(),
             new DrawThenPurgeStrategy()
     );
     private static final Random RNG = new Random();

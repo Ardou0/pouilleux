@@ -61,6 +61,11 @@ public class Scoreboard {
         }
     }
 
+    /**
+     * Save the score into the scoreboard file
+     *
+     * @throws IOException if save went wrong
+     */
     private void save() {
         // ensure parent directory
         try {
@@ -72,6 +77,19 @@ public class Scoreboard {
             props.store(out, "Pouilleux loss count per player");
         } catch (IOException e) {
             System.err.println("Error: could not save scoreboard: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Delete all scoreboard file to clear the persistent score
+     *
+     * @throws IOException if delete went wrong
+     */
+    public void clear() {
+        try {
+            Files.deleteIfExists(FILE);
+        } catch (IOException e) {
+            System.err.println("Error: could not delete scoreboard: " + e.getMessage());
         }
     }
 }

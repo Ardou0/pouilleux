@@ -13,9 +13,6 @@ public class RandomDrawStrategy implements MoveStrategy {
         Objects.requireNonNull(self);
         Objects.requireNonNull(leftNeighbor);
         self.drawFrom(leftNeighbor);
-        if(self.hasPairs()){
-            self.purgePairs();
-        }
         return Collections.emptyList();
     }
 }

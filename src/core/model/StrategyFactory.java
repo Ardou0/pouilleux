@@ -8,12 +8,8 @@ import java.util.Random;
  */
 public final class StrategyFactory {
     private static final List<MoveStrategy> AVAILABLE = List.of(
-            new RandomDrawStrategy(),
-            new PurgeThenDrawStrategy(),
             new DrawThenPurgeStrategy(),
-            new MixedRandomStrategy(),
-            new PurgeRedThenDrawStrategy(),
-            new ColorAwareStrategy()
+            new MixedRandomStrategy()
     );
     private static final Random RNG = new Random();
 

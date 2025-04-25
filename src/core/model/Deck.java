@@ -23,7 +23,7 @@ public class Deck {
                     continue; // omit the Jack of Clubs (“pouilleux”)
                 }
                 String path = String.format(
-                        "/images/cards/%s_%s.png",
+                        "images/cards/%s_%s.png",
                         rank.name().toLowerCase(),
                         suit.name().toLowerCase()
                 );

@@ -1,6 +1,8 @@
+// src/main/java/core/model/Player.java
 package core.model;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 /**
@@ -19,9 +21,20 @@ public class Player {
     }
 
     public String getName() { return name; }
-    public void setName(String name) { this.name = Objects.requireNonNull(name, "Player name must not be null"); }
+    public void setName(String name) { this.name = Objects.requireNonNull(name); }
 
-    public List<Card> getHand() { return List.copyOf(hand); }
+    /** Returns an unmodifiable snapshot of current hand. */
+    public List<Card> getHand() {
+        return List.copyOf(hand);
+    }
+
+    /** Overwrites this player's hand with the given list. */
+    public void setHand(List<Card> newHand) {
+        hand.clear();
+        hand.addAll(newHand);
+    }
+
+    public MoveStrategy getStrategy() { return strategy; }
     public int getHandSize() { return hand.size(); }
     public boolean hasNoCards() { return hand.isEmpty(); }
 
@@ -29,10 +42,10 @@ public class Player {
      * @return true if at least one same-color pair exists in hand
      */
     public boolean hasPairs() {
-        Map<Rank, List<Card>> byRank = hand.stream()
+        // same as before, works off the unmodifiable getHand()
+        Map<Rank, List<Card>> byRank = getHand().stream()
                 .collect(Collectors.groupingBy(Card::rank));
-
-        for (List<Card> group : byRank.values()) {
+        for (var group : byRank.values()) {
             for (int i = 0; i < group.size(); i++) {
                 for (int j = i + 1; j < group.size(); j++) {
                     if (group.get(i).sameColor(group.get(j))) {
@@ -46,36 +59,45 @@ public class Player {
 
     /**
      * Removes at most one red pair and one black pair per rank.
+     * Operates on the *internal* mutable hand list.
+     *
      * @return the cards removed (in pairs)
      */
     public List<Card> purgePairs() {
-        Map<Rank, List<Card>> byRank = hand.stream()
+        // snapshot for grouping
+        List<Card> snapshot = new ArrayList<>(hand);
+        if (snapshot.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<Rank, List<Card>> byRank = snapshot.stream()
                 .collect(Collectors.groupingBy(Card::rank));
 
         List<Card> removed = new ArrayList<>();
 
         for (List<Card> group : byRank.values()) {
-            boolean redDone   = false;
-            boolean blackDone = false;
+            boolean redRemoved   = false;
+            boolean blackRemoved = false;
             for (int i = 0; i < group.size(); i++) {
                 Card c1 = group.get(i);
                 for (int j = i + 1; j < group.size(); j++) {
                     Card c2 = group.get(j);
                     if (c1.sameColor(c2)) {
                         boolean isRed = c1.suit() == Suit.HEARTS || c1.suit() == Suit.DIAMONDS;
-                        if ((isRed && !redDone) || (!isRed && !blackDone)) {
+                        if ((isRed && !redRemoved) || (!isRed && !blackRemoved)) {
                             removed.add(c1);
                             removed.add(c2);
-                            if (isRed)   redDone   = true;
-                            else         blackDone = true;
+                            if (isRed)   redRemoved   = true;
+                            else         blackRemoved = true;
                             break;
                         }
                     }
                 }
-                if (redDone && blackDone) break;
+                if (redRemoved && blackRemoved) break;
             }
         }
 
+        // remove from *this* player's hand:
         hand.removeAll(removed);
         return removed;
     }
@@ -88,12 +110,11 @@ public class Player {
         if (from.hand.isEmpty()) {
             throw new IllegalStateException("Cannot draw from '" + from.name + "'; their hand is empty");
         }
-        int idx        = new Random().nextInt(from.hand.size());
-        Card drawn     = from.hand.remove(idx);
-        hand.add(drawn);
-        return drawn;
+        int idx    = ThreadLocalRandom.current().nextInt(from.hand.size());
+        Card card  = from.hand.remove(idx);
+        hand.add(card);
+        return card;
     }
-
 
     /**
      * Puts the given cards back into this player's hand.
@@ -104,7 +125,6 @@ public class Player {
         hand.addAll(cards);
     }
 
-
     /**
      * Executes one turn in the game. Returns the cards that were actually purged.
      */
@@ -112,7 +132,6 @@ public class Player {
         Objects.requireNonNull(leftNeighbor, "Neighbor must not be null");
         return strategy.makeMove(this, leftNeighbor);
     }
-
 
     // —— Sorting helpers ——
 
@@ -135,49 +154,7 @@ public class Player {
      */
     public void sortHandByColor() {
         hand.sort(Comparator
-                .comparing((Card c) ->
-                        c.suit() == Suit.HEARTS || c.suit() == Suit.DIAMONDS ? 0 : 1)
+                .comparing((Card c) -> (c.suit() == Suit.HEARTS || c.suit() == Suit.DIAMONDS) ? 0 : 1)
                 .thenComparing(Card::rank));
-    }
-
-    /**
-     * Brings all cards that form at least one same-color pair
-     * to the front of the hand, sorted by rank, then suit; the
-     * remainder follow, also sorted by rank and suit.
-     */
-    public void sortHandByPairPotential() {
-        // identify all cards that have at least one same-color partner
-        Set<Card> paired = new HashSet<>();
-        Map<Rank,List<Card>> byRank = hand.stream()
-                .collect(Collectors.groupingBy(Card::rank));
-
-        for (List<Card> group : byRank.values()) {
-            for (int i = 0; i < group.size(); i++) {
-                for (int j = i + 1; j < group.size(); j++) {
-                    Card c1 = group.get(i), c2 = group.get(j);
-                    if (c1.sameColor(c2)) {
-                        paired.add(c1);
-                        paired.add(c2);
-                    }
-                }
-            }
-        }
-
-        // split into paired vs. unpaired
-        List<Card> pairedList   = hand.stream().filter(paired::contains).toList();
-        List<Card> unpairedList = hand.stream().filter(c -> !paired.contains(c)).toList();
-
-        // sort each sub-list
-        Comparator<Card> byRankSuit = Comparator
-                .comparing(Card::rank)
-                .thenComparing(Card::suit);
-
-        pairedList.sort(byRankSuit);
-        unpairedList.sort(byRankSuit);
-
-        // rebuild hand
-        hand.clear();
-        hand.addAll(pairedList);
-        hand.addAll(unpairedList);
     }
 }
