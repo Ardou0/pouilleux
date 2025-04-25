@@ -145,7 +145,7 @@ public class GamePanel extends JPanel {
                 // if that move was done by a bot, pause briefly
                 Player moved = players.get(game.getCurrentIndex());
                 if (!(moved.getStrategy() instanceof HumanStrategy)) {
-                    try { Thread.sleep(300); } catch (InterruptedException ignored) {}
+                    try { Thread.sleep(3); } catch (InterruptedException ignored) {}
                 }
             }
             // final dialog

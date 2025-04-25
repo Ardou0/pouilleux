@@ -94,34 +94,61 @@ public class Game {
     }
 
     public boolean isGameOver() {
-        // 1) check "only J♠" condition
-        for (Player p : players) {
-            if (p.getHandSize() == 1) {
-                Card only = p.getHand().get(0);
-                if (only.rank() == Rank.JACK && only.suit() == Suit.SPADES) {
-                    return true;
-                }
+        // count how many players still hold cards
+        List<Player> inPlay = players.stream()
+                .filter(p -> !p.hasNoCards())
+                .toList();
+        int survivors = inPlay.size();
+        // if only one (or zero) left => game over
+        if (survivors <= 1) {
+            return true;
+        }
+        // if exactly two left, and only ≤3 cards remain, we trigger the
+        // “Pouilleux” rule (last‐card Jack♦ rule)
+        if (survivors == 2) {
+            int totalCards = inPlay.stream()
+                    .mapToInt(Player::getHandSize)
+                    .sum();
+            if (totalCards <= 3) {
+                // game ends when the unlucky player is down to the single
+                // Jack of Spades
+                return inPlay.stream().anyMatch(p -> {
+                    if (p.getHandSize() == 1) {
+                        Card only = p.getHand().get(0);
+                        return only.rank() == Rank.JACK
+                                && only.suit() == Suit.SPADES;
+                    }
+                    return false;
+                });
             }
         }
-        // 2) fallback: only one player still has any cards
-        long survivors = players.stream()
-                .filter(pl -> !pl.hasNoCards())
-                .count();
-        return survivors <= 1;
+        // otherwise not over yet
+        return false;
     }
 
 
+
     public Optional<Player> getLoser() {
-        // 1) check for the Pouilleux‐only loser:
-        for (Player p : players) {
-            if (p.getHandSize() == 1) {
-                Card only = p.getHand().get(0);
-                if (only.rank() == Rank.JACK && only.suit() == Suit.SPADES) {
-                    return Optional.of(p);
-                }
+        // first check the 2‐player Pouilleux case
+        List<Player> inPlay = players.stream()
+                .filter(p -> !p.hasNoCards())
+                .toList();
+        if (inPlay.size() == 2) {
+            int totalCards = inPlay.stream()
+                    .mapToInt(Player::getHandSize)
+                    .sum();
+            if (totalCards <= 3) {
+                // loser is the one stuck with only the Jack of Spades
+                return inPlay.stream()
+                        .filter(p -> p.getHandSize() == 1)
+                        .filter(p -> {
+                            Card only = p.getHand().get(0);
+                            return only.rank() == Rank.JACK
+                                    && only.suit() == Suit.SPADES;
+                        })
+                        .findFirst();
             }
         }
-        // 2) old logic: last one with cards
         if (!isGameOver()) {
             return Optional.empty();
         }

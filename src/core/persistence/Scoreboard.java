@@ -86,6 +86,9 @@ public class Scoreboard {
      * @throws IOException if delete went wrong
      */
     public void clear() {
+        losses.clear();
+        props.clear();
+
         try {
             Files.deleteIfExists(FILE);
         } catch (IOException e) {

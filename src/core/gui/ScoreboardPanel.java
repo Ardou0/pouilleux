@@ -6,6 +6,7 @@ import core.persistence.Scoreboard;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -16,6 +17,7 @@ public class ScoreboardPanel extends JPanel {
     private final JTable table;
     private final DefaultTableModel tableModel;
     private final JButton backButton;
+    private final JButton clearButton;
 
     public ScoreboardPanel(MainFrame parent) {
         this.parent = parent;
@@ -35,10 +37,13 @@ public class ScoreboardPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
 
-        // Back button
-        backButton = new JButton("Back to Menu");
+        // Back + Clear button
+        backButton  = new JButton("Back to Menu");
+        clearButton = new JButton("Clear Scoreboard");
         backButton.addActionListener(e -> parent.showMenu());
+        clearButton.addActionListener(e -> clearButtonScoreBoard());
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottom.add(clearButton);
         bottom.add(backButton);
         add(bottom, BorderLayout.SOUTH);
     }
@@ -49,7 +54,30 @@ public class ScoreboardPanel extends JPanel {
     public void updateTable(List<ScoreEntry> entries) {
         tableModel.setRowCount(0);
         for (ScoreEntry entry : entries) {
-            tableModel.addRow(new Object[]{entry.name(), entry.losses()});
+            tableModel.addRow(new Object[]{ entry.name(), entry.losses() });
         }
+    }
+
+    /**
+     * Clears both the underlying Scoreboard and the table UI immediately.
+     */
+    private void clearButtonScoreBoard() {
+        // 1) Clear the data
+        Scoreboard scoreboard = parent.getScoreboard();
+        scoreboard.clear();
+
+        // 2) Wipe out the table model right away
+        tableModel.setRowCount(0);
+
+        // 3) (Optional) If you want to reflect whatever standings() now returns:
+        List<ScoreEntry> now = scoreboard.standings();
+        if (!now.isEmpty()) {
+            // repopulate with fresh data—probably redundant if clear() worked
+            updateTable(now);
+        }
+
+        // 4) Refresh UI
+        table.revalidate();
+        table.repaint();
     }
 }
