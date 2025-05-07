@@ -14,25 +14,31 @@ public class MenuPanel extends JPanel {
 
         add(Box.createVerticalGlue());
 
-        JButton newGameButton = new JButton("New Game");
+        JButton newGameButton = new SoundButton("New Game");
         newGameButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         newGameButton.addActionListener(e -> parent.showSetup());
         add(newGameButton);
         add(Box.createVerticalStrut(20));
 
-        JButton scoreboardButton = new JButton("Scoreboard");
+        JButton scoreboardButton = new SoundButton("Scoreboard");
         scoreboardButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         scoreboardButton.addActionListener(e -> parent.showScoreboard());
         add(scoreboardButton);
         add(Box.createVerticalStrut(20));
 
-        JButton replayButton = new JButton("Replay");
+        JButton replayButton = new SoundButton("Replay");
         replayButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         replayButton.addActionListener(e -> parent.showReplay());
         add(replayButton);
         add(Box.createVerticalStrut(20));
 
-        JButton exitButton = new JButton("Exit");
+        JButton settingsButton = new SoundButton("Settings");
+        settingsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        settingsButton.addActionListener(e -> parent.showSettings());
+        add(settingsButton);
+        add(Box.createVerticalStrut(20));
+
+        JButton exitButton = new SoundButton("Exit");
         exitButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         exitButton.addActionListener(e -> System.exit(0));
         add(exitButton);

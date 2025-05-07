@@ -38,13 +38,13 @@ public class ScoreboardPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
 
         // Back + Clear button
-        backButton  = new JButton("Back to Menu");
-        clearButton = new JButton("Clear Scoreboard");
+        backButton  = new SoundButton("Back to Menu");
+        clearButton = new SoundButton("Clear Scoreboard");
         backButton.addActionListener(e -> parent.showMenu());
         clearButton.addActionListener(e -> clearButtonScoreBoard());
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottom.add(clearButton);
         bottom.add(backButton);
+        bottom.add(clearButton);
         add(bottom, BorderLayout.SOUTH);
     }
 

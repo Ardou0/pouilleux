@@ -47,8 +47,8 @@ public class ReplayPanel extends JPanel {
         fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         listView.add(new JScrollPane(fileList), BorderLayout.CENTER);
         JPanel listButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        openButton = new JButton("Open Replay");
-        backMenuButton = new JButton("Back to Menu");
+        openButton = new SoundButton("Open Replay");
+        backMenuButton = new SoundButton("Back to Menu");
         listButtons.add(backMenuButton);
         listButtons.add(openButton);
         listView.add(listButtons, BorderLayout.SOUTH);
@@ -62,10 +62,10 @@ public class ReplayPanel extends JPanel {
         replayView.add(new JScrollPane(replayArea), BorderLayout.CENTER);
 
         JPanel controlBar = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        prevButton = new JButton("< Prev");
-        nextButton = new JButton("Next >");
-        backListButton = new JButton("Back to Replays");
-        backToMenuButton = new JButton("Back to Menu");
+        prevButton = new SoundButton("< Prev");
+        nextButton = new SoundButton("Next >");
+        backListButton = new SoundButton("Back to Replays");
+        backToMenuButton = new SoundButton("Back to Menu");
         controlBar.add(prevButton);
         controlBar.add(nextButton);
         controlBar.add(backListButton);

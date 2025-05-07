@@ -25,6 +25,8 @@ public class SetupPanel extends JPanel {
     private final JSpinner humanCountSpinner;
     private final JPanel playersConfigPanel;
     private final JButton startButton;
+    private final JButton backButton;
+
 
     public SetupPanel(MainFrame parent) {
         this.parent = Objects.requireNonNull(parent);
@@ -55,7 +57,9 @@ public class SetupPanel extends JPanel {
 
         // Bottom: controls
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        startButton = new JButton("Start Game");
+        backButton = new SoundButton("Back to Menu");
+        bottom.add(backButton);
+        startButton = new SoundButton("Start Game");
         bottom.add(startButton);
         add(bottom, BorderLayout.SOUTH);
 
@@ -68,6 +72,7 @@ public class SetupPanel extends JPanel {
         // internetButton is disabled
         humanCountSpinner.addChangeListener(e -> rebuildPlayerConfig());
         startButton.addActionListener(e -> onStart());
+        backButton.addActionListener(e -> parent.showMenu());
 
         reset();
     }

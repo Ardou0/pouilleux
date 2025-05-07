@@ -5,9 +5,6 @@ import core.persistence.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -22,6 +19,7 @@ public class MainFrame extends JFrame {
     private GamePanel gamePanel;
     private ScoreboardPanel scoreboardPanel;
     private ReplayPanel replayPanel;
+    private SettingsPanel settingsPanel;
 
     private Scoreboard scoreboard;
 
@@ -42,6 +40,7 @@ public class MainFrame extends JFrame {
         gamePanel = new GamePanel(this);
         scoreboardPanel = new ScoreboardPanel(this);
         replayPanel = new ReplayPanel(this);
+        settingsPanel = new SettingsPanel(this);
 
         // add to main panel
         mainPanel.add(menuPanel, "MENU");
@@ -49,6 +48,7 @@ public class MainFrame extends JFrame {
         mainPanel.add(gamePanel, "GAME");
         mainPanel.add(scoreboardPanel, "SCOREBOARD");
         mainPanel.add(replayPanel, "REPLAY");
+        mainPanel.add(settingsPanel, "SETTINGS");
 
         setContentPane(mainPanel);
         showMenu();
@@ -67,7 +67,7 @@ public class MainFrame extends JFrame {
         if (type == 0) {
             gamePanel.startNewPlayerGame(players);
         }
-        if(type == 1) {
+        if (type == 1) {
             gamePanel.startNewBotGame(players);
         }
         cardLayout.show(mainPanel, "GAME");
@@ -83,14 +83,30 @@ public class MainFrame extends JFrame {
         cardLayout.show(mainPanel, "REPLAY");
     }
 
+    public void showSettings() {
+        cardLayout.show(mainPanel, "SETTINGS");
+    }
+
     public Scoreboard getScoreboard() {
         return scoreboard;
+    }
+
+    public AppSettings getSettings()   {
+        AppSettings settings = new AppSettings();
+        return settings;
+    }
+
+    public void clearReplayHistory() {
+        ReplayLogger.clearAll();
+        replayPanel.refreshFileList();
     }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             MainFrame frame = new MainFrame();
+            SoundManager.install(frame.getSettings());
             frame.setVisible(true);
+            SoundManager.playMusic("/sounds/ambiance.wav");
         });
     }
 }

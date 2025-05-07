@@ -1,18 +1,15 @@
 package core.model;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.net.URL;
 import java.util.Objects;
 
 /**
  * Represents a playing card, defined by its rank, suit, and
- * the path to its image file for the UI.
+ * the resource path to its image file for the UI.
  *
  * @param rank      the rank of the card (ACE, TWO, …, KING)
  * @param suit      the suit of the card (CLUBS, DIAMONDS, HEARTS, SPADES)
- * @param imagePath the resource path to the card's image (non-null)
+ * @param imagePath the classpath resource path to the card's image (e.g. "/images/cards/ACE_SPADES.png")
  */
 public record Card(Rank rank, Suit suit, String imagePath) {
 
@@ -38,23 +35,32 @@ public record Card(Rank rank, Suit suit, String imagePath) {
     }
 
     /**
-     * Returns absolute path of the card image
+     * Returns a URL string to the card image resource on the classpath.
      *
-     * @return a String representing the path of the image
-     * @throws IOException if is image not found
+     * @return a String URL for loading the image via ImageIcon
+     * @throws RuntimeException if the resource is not found
      */
     public String imagePath() {
-        try {
-            File image = new File(imagePath);
-            if(image.exists() && !image.isDirectory()) {
-                return image.getAbsolutePath();
-            }
-            else {
-                throw new IOException("Card image not found");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        URL resource = Card.class.getResource(imagePath);
+        if (resource == null) {
+            throw new RuntimeException("Card image resource not found: " + imagePath);
         }
+        return resource.toExternalForm();
+    }
+
+    /**
+     * Returns a URL string to the back-of-card image on the classpath.
+     *
+     * @return a String URL for loading the back image via ImageIcon
+     * @throws RuntimeException if the resource is not found
+     */
+    public static String backImagePath() {
+        String backPath = "/images/cards/BACK_CARD.png";
+        URL resource = Card.class.getResource(backPath);
+        if (resource == null) {
+            throw new RuntimeException("Back card image resource not found: " + backPath);
+        }
+        return resource.toExternalForm();
     }
 
     /**

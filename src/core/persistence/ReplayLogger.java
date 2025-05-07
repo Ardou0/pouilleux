@@ -73,6 +73,28 @@ public class ReplayLogger implements AutoCloseable {
         }
     }
 
+    public static void clearAll() {
+        try {
+            // Ensure directory exists
+            if (!Files.exists(DIR)) return;
+
+            // List and delete each file
+            try (Stream<Path> files = Files.list(DIR)) {
+                files.forEach(path -> {
+                    try {
+                        Files.deleteIfExists(path);
+                    } catch (IOException e) {
+                        System.err.println("Warning: could not delete replay file "
+                                + path.getFileName() + ": " + e.getMessage());
+                    }
+                });
+            }
+        } catch (IOException e) {
+            System.err.println("Warning: failed to clear replay directory: "
+                    + e.getMessage());
+        }
+    }
+
     @Override
     public void close() throws IOException {
         writer.write("End of replay at " + LocalDateTime.now().format(timeFmt));
