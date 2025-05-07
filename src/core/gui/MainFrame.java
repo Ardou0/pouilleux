@@ -3,9 +3,13 @@ package core.gui;
 import core.model.*;
 import core.persistence.*;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Main application window for Pouilleux game.
@@ -33,14 +37,21 @@ public class MainFrame extends JFrame {
 
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
+        mainPanel.setBackground(new Color(23, 130, 189));
 
         // initialize panels
         menuPanel = new MenuPanel(this);
+        menuPanel.setBackground(new Color(23, 130, 189));
         setupPanel = new SetupPanel(this);
+        setupPanel.setBackground(new Color(23, 130, 189));
         gamePanel = new GamePanel(this);
+        gamePanel.setBackground(new Color(23, 130, 189));
         scoreboardPanel = new ScoreboardPanel(this);
+        scoreboardPanel.setBackground(new Color(23, 130, 189));
         replayPanel = new ReplayPanel(this);
+        replayPanel.setBackground(new Color(23, 130, 189));
         settingsPanel = new SettingsPanel(this);
+        settingsPanel.setBackground(new Color(23, 130, 189));
 
         // add to main panel
         mainPanel.add(menuPanel, "MENU");
@@ -52,6 +63,7 @@ public class MainFrame extends JFrame {
 
         setContentPane(mainPanel);
         showMenu();
+
     }
 
     public void showMenu() {
@@ -104,6 +116,16 @@ public class MainFrame extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             MainFrame frame = new MainFrame();
+            try (InputStream in = MainFrame.class.getResourceAsStream("/images/icon.png")) {
+                if (in != null) {
+                    Image img = ImageIO.read(in);
+                    frame.setIconImage(img);
+                } else {
+                    System.err.println("⚠️ /images/icon.png introuvable !");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             SoundManager.install(frame.getSettings());
             frame.setVisible(true);
             SoundManager.playMusic("/sounds/ambiance.wav");
