@@ -133,8 +133,6 @@ public class Player {
         return strategy.makeMove(this, leftNeighbor);
     }
 
-    // —— Sorting helpers ——
-
     /** Sorts this hand by rank, then by suit. */
     public void sortHandByRank() {
         hand.sort(Comparator
