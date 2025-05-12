@@ -4,6 +4,7 @@ import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.BufferedInputStream;
 import java.io.InputStream;
 
 /**
@@ -44,23 +45,30 @@ public class SoundManager {
     private static void playEffect(String resourcePath, String threadPrefix) {
         new Thread(() -> {
             try {
-                InputStream is = SoundManager.class.getResourceAsStream(resourcePath);
-                if (is == null) {
-                    // try classloader if direct getResourceAsStream fails
-                    is = Thread.currentThread().getContextClassLoader()
-                            .getResourceAsStream(resourcePath.startsWith("/") ? resourcePath.substring(1) : resourcePath);
+                // Attempt to load via class resource
+                InputStream raw = SoundManager.class.getResourceAsStream(resourcePath);
+                if (raw == null) {
+                    // Fallback to context class loader
+                    String path = resourcePath.startsWith("/") ? resourcePath.substring(1) : resourcePath;
+                    raw = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
                 }
-                if (is == null) {
+                if (raw == null) {
                     System.err.println("SoundManager: resource not found: " + resourcePath);
                     return;
                 }
-                try (AudioInputStream ais = AudioSystem.getAudioInputStream(is)) {
+
+                // Wrap in BufferedInputStream to enable mark/reset
+                try (BufferedInputStream bis = new BufferedInputStream(raw);
+                     AudioInputStream ais = AudioSystem.getAudioInputStream(bis)) {
+
                     Clip clip = AudioSystem.getClip();
                     clip.open(ais);
                     setVolume(clip, settings.getEffectsVolume());
                     clip.start();
                     clip.addLineListener(evt -> {
-                        if (evt.getType() == LineEvent.Type.STOP) clip.close();
+                        if (evt.getType() == LineEvent.Type.STOP) {
+                            clip.close();
+                        }
                     });
                 }
             } catch (Exception e) {
@@ -76,12 +84,14 @@ public class SoundManager {
     public static void playMusic(String resourcePath) {
         stopMusic();
         try {
-            InputStream is = SoundManager.class.getResourceAsStream(resourcePath);
-            if (is == null) {
+            InputStream raw = SoundManager.class.getResourceAsStream(resourcePath);
+            if (raw == null) {
                 System.err.println("SoundManager: music resource not found: " + resourcePath);
                 return;
             }
-            try (AudioInputStream ais = AudioSystem.getAudioInputStream(is)) {
+            // wrap to get mark/reset support
+            try (BufferedInputStream is = new BufferedInputStream(raw);
+                 AudioInputStream ais = AudioSystem.getAudioInputStream(is)) {
                 musicClip = AudioSystem.getClip();
                 musicClip.open(ais);
                 setVolume(musicClip, settings.getMusicVolume());
